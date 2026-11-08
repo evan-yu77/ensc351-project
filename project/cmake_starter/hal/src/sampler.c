@@ -1,5 +1,6 @@
 #include "hal/sampler.h"
 #include "hal/spi_lib.h"
+#include "hal/motor.h"
 #include <pthread.h>
 #include <time.h>
 #include <unistd.h>
@@ -18,8 +19,11 @@ void* background_sampler(void* arg) {
         sharedData.accel_y = read_adc(1); 
 
         /* following code will be uncommented when sensors implemented*/
-        // sharedData.current_ma = read_adc(2); 
-        // sharedData.rpm = read_adc(3); 
+        sharedData.current_ma = read_adc(2); 
+        sharedData.rpm = read_adc(3); 
+
+        motor_set_dir(true); // Set motor direction to forward
+        motor_set_speed(sharedData.motor_speed); // Set motor speed based on sharedData
 
         nanosleep(&sleep, NULL); // Sleep for 10 milliseconds
     }

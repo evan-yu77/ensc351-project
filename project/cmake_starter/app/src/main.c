@@ -7,6 +7,7 @@
 #include "hal/sampler.h"
 #include "hal/udp.h"
 #include "hal/spi_lib.h"
+#include "hal/motor.h"
 
 int main()
 {
@@ -15,7 +16,8 @@ int main()
     printf("Starting vibration diagnostics...\n");
 
     spi_init(); // Initialize SPI library
-    
+    motor_init(); // Initialize motor control
+
     printf("Listening for UDP commands on port 12345....    \n");
 
     if (pthread_create(&sampler_thread, NULL, background_sampler, NULL) != 0) {

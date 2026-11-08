@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #define PWM_CHIP_PATH "/sys/class/pwm/pwmchip0"
-#define PWM_PERIOD = 1000000 // 1 kHz frequency (1 ms period)
+#define PWM_PERIOD 1000000 // 1 kHz frequency (1 ms period)
 
 static void write_sysfs(const char* path, const char* value) {
     FILE* f = fopen(path, "w");
@@ -31,7 +31,7 @@ void pwm_init(void) {
     write_sysfs(PWM_CHIP_PATH "/pwm0/enable", "1");
 }
 
-void pwm_set_motor_speed(int speed) {
+void pwm_set_speed(int speed) {
     if (speed < 0 || speed > 100) {
         printf("Error: Speed must be between 0 and 100\n");
         return;
