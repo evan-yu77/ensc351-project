@@ -51,7 +51,7 @@ We use CMake in this project to cross compile from the host PC. To use this, you
 ```bash
 cmake -S . -B build // create build folder that contains Makefile in order to compile project 
 
-cd ~/ensc351/work/as1/cmake_starter/build 
+cd ~/ensc351/work/project/cmake_starter/build 
 
 
 // pass compiler paths to cmd line to avoid exec format errors while running on beagleboard (run from build folder)
