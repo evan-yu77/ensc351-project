@@ -8,6 +8,8 @@
 SensorData sharedData = {0, 0, 0, 0, true}; // Initialize sharedData with default values
 
 void* background_sampler(void* arg) {
+
+    (void)arg; // Unused parameter
     struct timespec sleep = {0, 10000000}; // 10 milliseconds
 
     while(sharedData.is_running) {

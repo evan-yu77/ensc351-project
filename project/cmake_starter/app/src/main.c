@@ -3,21 +3,37 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
+#include "hal/sampler.h"
+#include "hal/udp.h"
 #include "hal/spi_lib.h"
 
 int main()
 {
-    printf("Initializing SPI...\n");
-    spi_init();
+    pthread_t sampler_thread, udp_thread;
 
-    while(1) {
-        uint16_t val_x = read_adc(0); // Read from channel 0
-        uint16_t val_y = read_adc(1); // Read from channel 1
+    printf("Starting vibration diagnostics...\n");
 
-        printf("X-value: %4d  | Y-value: %4d\n", val_x, val_y);
-        usleep(500000); // Sleep for 500ms
+    spi_init(); // Initialize SPI library
+    
+    printf("Listening for UDP commands on port 12345....    \n");
+
+    if (pthread_create(&sampler_thread, NULL, background_sampler, NULL) != 0) {
+        printf("Failed to create sampler thread");
+        return 1;
     }
 
-    spi_close();
+    if (pthread_create(&udp_thread, NULL, udp_network_thread, NULL) != 0) {
+        printf("Failed to create UDP thread");
+        return 1;
+    }
+
+    while(1) {
+        sleep(10);
+    }
+
+    sharedData.is_running = false;
+    pthread_join(sampler_thread, NULL);
+    pthread_join(udp_thread, NULL);
     return 0;
 }
