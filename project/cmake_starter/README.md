@@ -40,7 +40,7 @@ sampler.c / sampler.h
 
 It is crucial for the BeagleY-AI hardware to be properly configured before anything else is done:
 *   **Device Trees:** Ensure the SPI overlay (`spidev0`) and PWM overlay are loaded in `/boot/firmware/extlinux/extlinux.conf`.
-*   **Wiring:** Connect the MCP3208 ADC to SPI0, the INA219 to I2C-1, and the TB6612FNG motor driver to `pwmchipX' (replace X with your actual chip number) and the appropriate GPIO pins.
+*   **Wiring:** Connect the MCP3208 ADC to SPI0, the INA219 to I2C-1, and the TB6612FNG motor driver to `pwmchipX` (replace X with your actual chip number) and the appropriate GPIO pins.
 *   **Network:** The rest of the instructions assumes your host PC and BeagleY-AI are connected over local network, with the project directory shared via NFS.
 
 
