@@ -8,6 +8,7 @@ typedef struct {
     int accel_y;
     int current_ma; // current in milliamps
     int rpm;
+    int motor_speed; // track motor speed
     bool is_running;
 } SensorData;
 

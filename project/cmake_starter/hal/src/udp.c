@@ -10,7 +10,7 @@
 void* udp_network_thread(void* arg) {
 
     (void)arg; // Unused parameter
-    
+
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
     socklen_t addr_len = sizeof(client_addr);
@@ -45,10 +45,25 @@ void* udp_network_thread(void* arg) {
         buffer[n] = '\0'; // Null-terminate the received data
 
         char response[256];
-        // Prepare the response with the current sensor data
-        snprintf(response, sizeof(response), "Accel X: %d, Accel Y: %d", // Current (mA): %d, RPM: %d", 
-                 sharedData.accel_x, sharedData.accel_y); // sharedData.current_ma, sharedData.rpm);
-        sendto(sockfd, response, strlen(response), 0, (const struct sockaddr *)&client_addr, addr_len);
+        int motorSpeed = 0;
+        
+        // usage: type speed 50 after netcat to set motor speed
+        if (sscanf(buffer, "speed %d", &motorSpeed) == 1) {
+
+            if (motorSpeed < 0 || motorSpeed > 100) {
+                snprintf(response, sizeof(response), "Invalid motor speed. Must be between 0 and 100.");
+            } else {
+                sharedData.motor_speed = motorSpeed;
+                snprintf(response, sizeof(response), "Motor speed set to %d", motorSpeed);
+            }
+        } else {
+            // Prepare the response with the current sensor data
+            snprintf(response, sizeof(response), "Accel X: %d, Accel Y: %d, Current (mA): %d, RPM: %d, Speed: %d", sharedData.accel_x, sharedData.accel_y, sharedData.current_ma, sharedData.rpm, sharedData.motor_speed);
+        }
+
+        sendto(sockfd, response, strlen(response), 0, (const struct sockaddr *)&client_addr, addr_len);            
+
+        
     }
 
     close(sockfd);

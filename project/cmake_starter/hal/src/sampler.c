@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 
-SensorData sharedData = {0, 0, 0, 0, true}; // Initialize sharedData with default values
+SensorData sharedData = {0, 0, 0, 0, 0, true}; // Initialize sharedData with default values
 
 void* background_sampler(void* arg) {
 
