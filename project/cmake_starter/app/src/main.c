@@ -16,7 +16,9 @@ int main()
     printf("Starting vibration diagnostics...\n");
 
     spi_init(); // Initialize SPI library
-    motor_init(); // Initialize motor control
+
+
+    // motor_init(); // Initialize motor control
 
     printf("Listening for UDP commands on port 12345....    \n");
 
@@ -30,12 +32,15 @@ int main()
         return 1;
     }
 
-    while(1) {
+    while(sharedData.is_running) {
         sleep(10);
     }
+
 
     sharedData.is_running = false;
     pthread_join(sampler_thread, NULL);
     pthread_join(udp_thread, NULL);
+
+    // motor.stop();
     return 0;
 }

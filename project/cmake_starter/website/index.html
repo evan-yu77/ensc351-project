@@ -1,0 +1,55 @@
+<!--HTML template for website/dashboard. Created using Chart.js library-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>
+        Vibration Diagnostics
+    </title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 8px; }
+        .control-group { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        input[type="range"] { flex-grow: 1; }
+        #fault-indicator { 
+            padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; 
+            background: #2e7d32; /* defaults to green / safe */
+        }
+        .fault-active { background: #d32f2f !important; /* turns red on fault */ }
+    </style>
+</head>
+
+<body>
+    <h2>Motor Fault Vibration Diagnostics</h2>
+
+    <div class="grid">
+        <!-- controls & status -->
+        <div class="panel">
+            <h3>System Status</h3>
+            <div id="fault-indicator">SYSTEM NORMAL</div>
+            
+            <h3 style="margin-top: 30px;">Motor Control</h3>
+            <div class="control-group">
+                <label>Speed: <span id="speed-val">0</span>%</label>
+                <input type="range" id="motor-speed" min="0" max="100" value="0">
+            </div>
+        </div>
+
+        <!-- current & RPM Chart -->
+        <div class="panel">
+            <canvas id="motorChart"></canvas>
+        </div>
+
+        <!-- vibration/acceleration chart (spans bottom) -->
+        <div class="panel" style="grid-column: span 2;">
+            <canvas id="vibrationChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
