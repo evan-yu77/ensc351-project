@@ -4,6 +4,9 @@
 int i2c_init(void);
 
 int i2c_current(int f);
+int i2c_config(int f);
+
+int i2c_calibration(int f);
 
 int i2c_power(int f);
 
