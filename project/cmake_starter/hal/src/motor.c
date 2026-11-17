@@ -4,8 +4,8 @@
 #include <unistd.h>
 
 // replace this with the actual GPIO pin numbers for motor driver later
-#define IN1_PIN "517"
-#define IN2_PIN "518"
+#define IN1_PIN "572" // GPIO 27
+#define IN2_PIN "634" // GPIO 17    
 
 static void write_gpio(const char* pin, const char* value) {
     char path[64];
@@ -63,7 +63,15 @@ void motor_set_dir(bool forward) {
 }
 
 void motor_set_speed(int speed) {
-    pwm_set_speed(speed);
+    if (speed > 0) {
+        motor_set_dir(true); // Set direction to forward
+        pwm_set_speed(speed);
+    } else if (speed < 0) {
+        motor_set_dir(false); // Set direction to reverse
+        pwm_set_speed(-speed);
+    } else {
+        motor_stop(); // Stop the motor if speed is 0
+    }
 }
 
 void motor_stop(void) {

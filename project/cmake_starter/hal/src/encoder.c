@@ -84,13 +84,13 @@ int encoder_init(int pinA, int pinB) {
     sprintf(path, "/sys/class/gpio/gpio%s/direction", pinB_str);
     write_sysfs(path, "in");
     
-    sprintf(path, "sys/class/gpio/gpio%s/edge", pinA_str);
+    sprintf(path, "/sys/class/gpio/gpio%s/edge", pinA_str);
     write_sysfs(path, "rising");
 
-    sprintf(path, "sys/class/gpio/gpio%s/value", pinA_str);
+    sprintf(path, "/sys/class/gpio/gpio%s/value", pinA_str);
     fd_A = open(path, O_RDONLY | O_NONBLOCK);
 
-    sprintf(path, "sys/class/gpio/gpio%s/value", pinB_str);
+    sprintf(path, "/sys/class/gpio/gpio%s/value", pinB_str);
     fd_B = open(path, O_RDONLY | O_NONBLOCK);
 
     clock_gettime(CLOCK_MONOTONIC, &last_time);

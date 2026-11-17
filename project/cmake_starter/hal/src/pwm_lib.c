@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define PWM_CHIP_PATH "/sys/class/pwm/pwmchip0"
+#define PWM_CHIP_PATH "/sys/class/pwm/pwmchip3"
 #define PWM_PERIOD 1000000 // 1 kHz frequency (1 ms period)
 
 static void write_sysfs(const char* path, const char* value) {
