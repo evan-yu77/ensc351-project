@@ -11,6 +11,34 @@ const vibChart = new Chart(ctxVib, {
     options: { animation: false, scales: { x: { display: false } } }
 });
 
+// fault information display
+const FAULT_INFO = {
+    1: {
+        title: "[Code 1] MOTOR STALLED (High Current, Low RPM)",
+        tips: [
+            "DANGER: Check for physical jams or tangles on the motor shaft.",
+            "Verify the encoder disk hasn't slipped off.",
+            "PWM duty cycle may be too low for the current load."
+        ]
+    },
+    2: {
+        title: "[Code 2] OVERCURRENT SPIKE (> 1000 mA)",
+        tips: [
+            "DANGER: Check for exposed wires shorting at AO1/AO2.",
+            "Inspect the TB6612FNG driver for overheating.",
+            "Verify the INA219 I2C calibration math."
+        ]
+    },
+    3: {
+        title: "[Code 3] SEVERE VIBRATION / IMBALANCE",
+        tips: [
+            "DANGER: Check if motor mount screws have vibrated loose.",
+            "Verify the rotor is centered on the shaft.",
+            "Ensure the accelerometer is taped down securely."
+        ]
+    }
+};
+
 // display current and RPM statistics 
 const ctxMotor = document.getElementById('motorChart').getContext('2d');
 const motorChart = new Chart(ctxMotor, {
@@ -48,12 +76,23 @@ ws.onmessage = (event) => {
     motorChart.update();
 
     const FaultIndicator = document.getElementById('fault-indicator');
-    if (data.fault) {
-        FaultIndicator.textContent = "Critical: fault detected! Stop operations immediately";
-        FaultIndicator.classList.add('fault-active');
+    const FaultTips = document.getElementById('fault-tips');
+    if (data.fault && FAULT_INFO[data.fault_code]) {
+        const info = FAULT_INFO[data.fault_code];
+        faultIndicator.textContent = `FAULT DETECTED: ${info.title}`;
+        faultIndicator.classList.add('fault-active');
+
+        faultTips.innerHTML = `<strong>Debugging Tips:</strong><ul style="margin: 6px 0 0 18px; padding: 0;">` +
+            info.tips.map(tip => `<li>${tip}</li>`).join('') + `</ul>`;
+        faultTips.style.display = 'block';
+
+        // Sync slider to 0 since C daemon halted the motor
+        speedSlider.value = 0;
+        speedVal.innerText = 0;
     } else {
         FaultIndicator.textContent = "System operating as normal.";
         FaultIndicator.classList.remove('fault-active');
+        FaultTips.style.display = 'none';
     }
 };
 
@@ -65,4 +104,15 @@ const speedVal = document.getElementById('speed-val');
 speedSlider.addEventListener('input', (e) => {
     speedVal.innerText = e.target.value;
     ws.send(JSON.stringify({command: 'speed', value: parseInt(e.target.value)}));
+});
+
+// reset button 
+document.getElementById('reset-btn').addEventListener('click', () => {
+    ws.send(JSON.stringify({ command: 'reset' }));
+});
+
+// enable or disable system
+
+document.getElementById('fault-toggle').addEventListener('change', (e) => {
+    ws.send(JSON.stringify({ command: 'fault_toggle', enabled: e.target.checked }));
 });

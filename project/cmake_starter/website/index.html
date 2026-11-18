@@ -31,6 +31,18 @@
         <div class="panel">
             <h3>System Status</h3>
             <div id="fault-indicator">SYSTEM NORMAL</div>
+
+            <!-- CUSTOM DEBUGGING TIPS BOX-->
+            <div id="fault-tips" style="display: none; margin-top: 12px; padding: 12px; background: #2c1515; border-left: 4px solid #d32f2f; border-radius: 4px; font-size: 0.9em;"></div>
+
+            <div class = "control-group" style="margin-top: 15px;">
+                <button id = "reset-btn" style="padding: 8px 16px; background: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                    Reset fault system
+                </button>
+                <label style ="cursor: pointer;">
+                    <input type="checkbox" id="fault-toggle" checked> Fault Detection Enabled
+                </label>
+            </div>
             
             <h3 style="margin-top: 30px;">Motor Control</h3>
             <div class="control-group">

@@ -47,18 +47,28 @@ void* udp_network_thread(void* arg) {
         char response[256];
         int motorSpeed = 0;
         
-        // usage: type speed 50 after netcat to set motor speed
         if (sscanf(buffer, "speed %d", &motorSpeed) == 1) {
-
-            if (motorSpeed < 0 || motorSpeed > 100) {
-                snprintf(response, sizeof(response), "Invalid motor speed. Must be between 0 and 100.");
+            if (sharedData.fault_active) {
+                snprintf(response, sizeof(response), "ERROR: Active fault (Code %d). Send 'reset' first.\n", sharedData.status);
+            } else if (motorSpeed < 0 || motorSpeed > 100) {
+                snprintf(response, sizeof(response), "Invalid motor speed. Must be between 0 and 100.\n");
             } else {
                 sharedData.motor_speed = motorSpeed;
-                snprintf(response, sizeof(response), "Motor speed set to %d", motorSpeed);
+                snprintf(response, sizeof(response), "Motor speed set to %d\n", motorSpeed);
             }
+        } else if (strncmp(buffer, "reset", 5) == 0) {
+            sampler_clear_fault();
+            snprintf(response, sizeof(response), "Fault cleared. System ready.\n");
+        } else if (strncmp(buffer, "fault on", 8) == 0) {
+            sampler_enable_fault_detection(true);
+            snprintf(response, sizeof(response), "FAULT DETECTION ENABLED\n");
+        } else if (strncmp(buffer, "fault off", 9) == 0) {
+            sampler_enable_fault_detection(false);
+            snprintf(response, sizeof(response), "FAULT DETECTION DISABLED\n");
         } else {
-            // Prepare the response with the current sensor data
-            snprintf(response, sizeof(response), "Accel X: %d, Accel Y: %d, Current (mA): %d, RPM: %d, Speed: %d", sharedData.accel_x, sharedData.accel_y, sharedData.current_ma, sharedData.rpm, sharedData.motor_speed);
+            snprintf(response, sizeof(response), "Accel X: %d, Accel Y: %d, Current (mA): %.1f, RPM: %d, Speed: %d, Fault: %d\n",
+                     sharedData.accel_x, sharedData.accel_y, sharedData.current_ma,
+                     sharedData.rpm, sharedData.motor_speed, sharedData.status);
         }
 
         sendto(sockfd, response, strlen(response), 0, (const struct sockaddr *)&client_addr, addr_len);            

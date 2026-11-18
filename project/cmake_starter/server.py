@@ -29,10 +29,15 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             command = json.loads(data)
+            cmd_type = command.get('command')
 
-            if command.get('command') == 'speed':
-                speed_val = command['value']
-                cmd_str = f"speed {speed_val}"
+            if cmd_type == 'speed':
+                cmd_str = f"speed {command['value']}"
+                sock.sendto(cmd_str.encode(), (UDP_IP, UDP_PORT))
+            elif cmd_type == 'reset':
+                sock.sendto(b"reset", (UDP_IP, UDP_PORT))
+            elif cmd_type == 'fault_toggle':
+                cmd_str = "fault on" if command.get('enabled') else "fault off"
                 sock.sendto(cmd_str.encode(), (UDP_IP, UDP_PORT))
     except WebSocketDisconnect:
         active_connections.remove(websocket)
@@ -49,15 +54,20 @@ async def udp_poller():
             text = data.decode('utf-8').strip()
             
             # parse the C string into variables using Regex
-            match = re.search(r"Accel X:\s*(-?\d+),\s*Accel Y:\s*(-?\d+),\s*Current \(mA\):\s*(-?\d+),\s*RPM:\s*(-?\d+)", text)
-            
+            match = re.search(
+                r"Accel X:\s*(-?\d+),\s*Accel Y:\s*(-?\d+),\s*Current \(mA\):\s*(-?\d+(?:\.\d+)?),\s*RPM:\s*(-?\d+),\s*Speed:\s*(-?\d+),\s*Fault:\s*(\d+)",
+                text
+            )            
             if match:
+                fault_code = int(match.group(6))
                 payload = {
                     "accel_x": int(match.group(1)),
                     "accel_y": int(match.group(2)),
-                    "current_ma": int(match.group(3)),
+                    "current_ma": float(match.group(3)),
                     "rpm": int(match.group(4)),
-                    "fault": False # to be replaced with actual motor fault logic later 
+                    "speed": int(match.group(5)),
+                    "fault_code": fault_code,
+                    "fault": fault_code > 0
                 }
                 
                 # blast the JSON to all open web dashboards

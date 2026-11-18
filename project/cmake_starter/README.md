@@ -34,14 +34,32 @@ sampler.c / sampler.h
 
     What it does: Runs a precise 1000 Hz background thread. It polls the SPI sensors, reads the I2C current, updates the sharedData struct (so the UDP thread can see it), and continuously applies the requested motor speed to the hardware.
 
+i2c_current_sensor.c / i2c_current_sensor.h
+
+    Purpose: Interfaces with the INA219 current sensor over the Linux I2C bus (/dev/i2c-1, address 0x40).
+
+    What it does: Configures and calibrates the INA219 for up to 1.0 A sensing, reads raw current/shunt/power registers, and converts the raw current reading into milliamps (mA).
+
+server.py
+
+    Purpose: Acts as the Python web bridge between the C background daemon and the browser dashboard.
+
+    What it does: Runs a FastAPI/Uvicorn server on port 8080, polls the C daemon over UDP at 10 Hz, parses the telemetry string into JSON, and streams live updates to connected browsers via WebSockets (`/ws`) while forwarding dashboard commands back to UDP.
+
+website/index.html & website/app.js
+
+    Purpose: Provides the frontend web dashboard for real-time monitoring and motor control.
+
+    What it does: Renders live Chart.js plots for vibration (Accel X/Y) and motor telemetry (Current mA & RPM), displays fault status and custom debugging tips, and sends speed, reset, and fault-toggle commands over WebSockets.
+
 ## How to use
 
 ### Prerequisites & hardware setup
 
 It is crucial for the BeagleY-AI hardware to be properly configured before anything else is done:
-*   **Device Trees:** Ensure the SPI overlay (`spidev0`) and PWM overlay are loaded in `/boot/firmware/extlinux/extlinux.conf`.
-*   **Wiring:** Connect the MCP3208 ADC to SPI0, the INA219 to I2C-1, and the TB6612FNG motor driver to `pwmchipX` (replace X with your actual chip number) and the appropriate GPIO pins.
-*   **Network:** The rest of the instructions assumes your host PC and BeagleY-AI are connected over local network, with the project directory shared via NFS.
+-   **Device Trees:** Ensure the SPI overlay (`spidev0`) and PWM overlay are loaded in `/boot/firmware/extlinux/extlinux.conf`.
+-   **Wiring:** Connect the MCP3208 ADC to SPI0, the INA219 to I2C-1, and the TB6612FNG motor driver to `pwmchipX` (replace X with your actual chip number) and the appropriate GPIO pins.
+-   **Network:** The rest of the instructions assumes your host PC and BeagleY-AI are connected over local network, with the project directory shared via NFS.
 
 
 ### Compiling source code 
@@ -85,7 +103,44 @@ Once connected, the following commands can be used:
 
 * speed 50 - sets motor to 50% PWM duty cycle. (accepts 0-100)
 * ? - Server will reply with the real time sensor data string. It will have the format: Accel X: 4, Accel Y: 1007, Current (mA): 0, RPM: 0, Speed: 50%
+* reset - clears an active fault state and unlocks motor speed commands.
+* fault on - enables automatic fault detection.
+* fault off - disables automatic fault detection (and clears any currently active fault).
 
+### Launching the web dashboard
+
+Make sure the C daemon (proj351) is already running on the BeagleY-AI, then start the Python web bridge in the directory containing server.py and the website/ folder:
+
+```bash 
+python3 server.py
+```
+***(IMPORTANT: Requires `fastapi` and `uvicorn` installed in your Python environment.)***
+
+Once running, open a web browser on your host PC and navigate to 
+
+```plaintext
+http://<BeagleY-AI-IP>:8080 
+```
+
+(Note: the BeagleY-AI IP address can be found in your network settings under your connected BeagleY-AI).
+
+### Using the Web Dashboard & Fault Detection System
+
+* Live Telemetry Charts: View real-time rolling graphs of Current (mA), RPM, and Vibration (Accel X / Accel Y) updated at 10 Hz.
+
+* Motor Control: Drag the Speed slider (0–100%) to adjust the motor's PWM duty cycle in real time.
+
+* Automatic Fault Detection & Safety Shutdown: The sampler continuously monitors sensor thresholds and will immediately halt the motor (`speed = 0`) if a fault occurs:
+
+    * ***Code 1*** (`FAULT_STALL`): High current draw with low RPM while the motor is commanded to spin.
+
+    * ***Code 2*** (`FAULT_OVERCURRENT`): Current spike exceeding the safe maximum limit.
+
+    * ***Code 3*** (`FAULT_VIBRATION`): Accelerometer deviation exceeding the vibration threshold.
+
+* ***Custom Debugging Tips***: When a fault triggers, the status banner turns red, the speed slider resets to 0%, and tailored hardware troubleshooting steps are printed to the BeagleY-AI terminal and displayed on the webpage.
+
+* ***Resetting & Toggling Faults***: Click Reset Fault (or send reset via UDP) to clear a latched fault before restarting the motor. Use the Fault Detection Enabled checkbox (or `fault on` / `fault off`) to toggle protection on or off during testing.
 
 ### Shutting down 
 
@@ -94,4 +149,8 @@ To safely stop the background daemon and free the network port, run this command
 ```bash
 sudo killall proj351
 ```
+
+If server.py is running in a terminal, press Ctrl + C to stop the web server.
+
+
 
