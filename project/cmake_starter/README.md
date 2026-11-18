@@ -126,11 +126,11 @@ http://<BeagleY-AI-IP>:8080
 
 ### Using the Web Dashboard & Fault Detection System
 
-* Live Telemetry Charts: View real-time rolling graphs of Current (mA), RPM, and Vibration (Accel X / Accel Y) updated at 10 Hz.
+* ***Live Telemetry Charts:*** View real-time rolling graphs of Current (mA), RPM, and Vibration (Accel X / Accel Y) updated at 10 Hz.
 
-* Motor Control: Drag the Speed slider (0–100%) to adjust the motor's PWM duty cycle in real time.
+* ***Motor Control:*** Drag the Speed slider (0–100%) to adjust the motor's PWM duty cycle in real time.
 
-* Automatic Fault Detection & Safety Shutdown: The sampler continuously monitors sensor thresholds and will immediately halt the motor (`speed = 0`) if a fault occurs:
+* ***Automatic Fault Detection & Safety Shutdown: The sampler continuously monitors*** sensor thresholds and will immediately halt the motor (`speed = 0`) if a fault occurs:
 
     * ***Code 1*** (`FAULT_STALL`): High current draw with low RPM while the motor is commanded to spin.
 
